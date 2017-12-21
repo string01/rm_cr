@@ -1,7 +1,6 @@
 package com.ocr.cash_register;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,7 @@ public class CalculatorTest extends AbstractTests {
         try {
             CashDrawer orig = cashDrawerFactory.create(FORMAT_68_1);
             CashDrawer req = cashDrawerFactory.create(FORMAT_48);
-            Calculator.RequestResult requestResult = calculator.makeChange(orig, req);
+            Calculator.RequestResult requestResult = calculator.makeChangeOld(orig, req);
             assertEquals(DOUBLE_48, requestResult.getResult().getTotal());
             assertEquals(DOUBLE_20, requestResult.getRemaining().getTotal());
 
@@ -42,12 +41,12 @@ public class CalculatorTest extends AbstractTests {
         try {
             CashDrawer orig = cashDrawerFactory.create(FORMAT_68);
             CashDrawer req = cashDrawerFactory.create(FORMAT_48);
-            Calculator.RequestResult requestResult = calculator.makeChangeSearchMode(orig, req);
+            Calculator.RequestResult requestResult = calculator.makeChange(orig, req);
             assertEquals(DOUBLE_48, requestResult.getResult().getTotal());
             assertEquals(DOUBLE_20, requestResult.getRemaining().getTotal());
             orig = cashDrawerFactory.create(FORMAT_68_1);
             req = cashDrawerFactory.create(FORMAT_48);
-            requestResult = calculator.makeChangeSearchMode(orig, req);
+            requestResult = calculator.makeChange(orig, req);
             assertEquals(DOUBLE_48, requestResult.getResult().getTotal());
             assertEquals(DOUBLE_20, requestResult.getRemaining().getTotal());
 

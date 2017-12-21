@@ -14,7 +14,8 @@ public class Calculator {
     @Autowired
     protected CashDrawerFactory cashDrawerFactory;
 
-    public RequestResult makeChange(CashDrawer registerDrawer, CashDrawer requestedDrawer) {
+    @Deprecated
+    public RequestResult makeChangeOld(CashDrawer registerDrawer, CashDrawer requestedDrawer) {
 
         // check if amt in register is > amt in req.
 
@@ -30,10 +31,8 @@ public class Calculator {
         CashDrawer reqCd = cashDrawerFactory.createEmpty();
         CashDrawer remainCd = cashDrawerFactory.createEmpty();
 
-
         for (Accumulator a : registerDrawer.getAccumulators()) {
             Optional<Accumulator> o = requestedDrawer.getAccumulators().stream().filter(x -> a.getDenomination().equals(x.getDenomination())).findFirst();
-
             if (!o.isPresent()){
                 throw new IllegalStateException();
             }
@@ -44,11 +43,10 @@ public class Calculator {
             reqCd.add(amtTaken);
             remainCd.add(remaining);
         }
-        log.debug("Done");
         return new RequestResult(reqCd, remainCd);
     }
 
-    public RequestResult makeChangeSearchMode (CashDrawer registerDrawer, CashDrawer requestedDrawer) {
+    public RequestResult makeChange(CashDrawer registerDrawer, CashDrawer requestedDrawer) {
         Double amt = requestedDrawer.getTotal();
         return search(registerDrawer, amt, Denomination.TWENTY);
     }
@@ -89,6 +87,21 @@ public class Calculator {
             searchInner(registerDrawer, resAmt, a.getDenomination().getNextLowest(), reqCd, remainCd);
         }
         return false;
+    }
+
+    public RequestResult subsetMatch(CashDrawer cashDrawer, CashDrawer req){
+        CashDrawer res = cashDrawerFactory.createEmpty();
+        CashDrawer rem = cashDrawerFactory.createEmpty();
+        for (Accumulator a: req.getAccumulators()){
+            Accumulator ax = cashDrawer.getAccumulatorFor(a.getDenomination());
+
+            if (a.getNumberOfUnits() >= ax.getNumberOfUnits()){
+                SubtractionResult sr = ax.subtract(a);
+                res.add(sr.getAmtTaken());
+                rem.add(sr.getAccumulator());
+            }
+        }
+        return new RequestResult(res, rem);
     }
 
     @Data

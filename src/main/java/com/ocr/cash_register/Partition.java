@@ -4,13 +4,19 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
+
+/**
+ * A class to calculate the possible combinations of
+ * a given set of Denominations to make up a a target amount.
+ * Based on the Partition algo
+ */
 @Slf4j
 public class Partition {
 
     final int target;
 
-    List<Map<Double, Double>> results = new ArrayList<>();
-    ValidatingMap<Double, Double> current;
+    List<Map<Double, Integer>> results = new ArrayList<>();
+    ValidatingMap<Double, Integer> current;
     boolean currentValid;
 
 
@@ -19,27 +25,33 @@ public class Partition {
         intialize(0.0);
     }
 
-    public Map<Double, Double> intialize(Double base) {
-        current = new ValidatingMap<Double, Double>(Double.valueOf(target));
+    /**
+     * XXX DL FIXME. Should be using Denomination class to populate this.
+     * @param base
+     * @return
+     */
+    public Map<Double, Integer> intialize(Double base) {
+        current = new ValidatingMap<>(Double.valueOf(target));
         Arrays.asList(new Double[]{1.0, 2.0, 5.0, 10.0, 20.0}).forEach(d -> {
-            current.put(d, Double.valueOf(0));
+            current.put(d, Integer.valueOf(0));
         });
         if (base > 0 && current.containsKey(base)) {
-            current.replace(base, 1.0);
+            current.replace(base, 1);
         }
         currentValid = true;
         return current;
     }
 
-    public void partition(int n) {
-        partition(n, n, "", 0.0);
+    public List<Map<Double, Integer>> partition() {
+        partition(target, target, "", 0.0);
+        return results;
     }
 
     int depth = 0;
     public void partition(int n, int max, String prefix, Double base) {
         ++depth;
         log.debug("n: {} max: {} prefix: {} base: {}", n, max, prefix, base);
-        Double d = current.get(Double.valueOf(max));
+        Integer d = current.get(Double.valueOf(max));
         if (d != null) {
             current.replace(Double.valueOf(max), ++d);
         } else {
@@ -69,10 +81,11 @@ public class Partition {
         return;
     }
 
+    // XXX DL FIXME Delete.
     public static void main(String[] args) {
         int N = Integer.parseInt(args[0]);
         Partition p = new Partition(N);
-        p.partition(N);
+        List<Map<Double, Integer>> output = p.partition();
         p.list();
     }
 
@@ -82,7 +95,7 @@ public class Partition {
         });
     }
 
-    private class ValidatingMap<K extends Double, V extends Double> extends HashMap<K, V> {
+    private class ValidatingMap<K extends Double, V extends Integer> extends HashMap<K, V> {
         private Double total = Double.valueOf(0);
         private final Double target;
 

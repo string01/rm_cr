@@ -30,6 +30,14 @@ public class Accumulator {
         this.total = nUnits * denomination.getMultiplier();
     }
 
+    /**
+     * Factory method for creating an Accumulator with a given
+     * multiplier and numberOfUnits.
+     */
+    public static Accumulator create(Double mulitplier, Integer numberOfUnits) {
+        return new Accumulator(Denomination.create(mulitplier), numberOfUnits);
+    }
+
     public Accumulator add(Accumulator accumulator) {
         int t = accumulator.numberOfUnits;
         t = this.numberOfUnits + t;

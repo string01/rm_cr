@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -25,13 +26,6 @@ public class CashDrawerFactory {
     public final static String INVALID_NUMBER_OF_TOKENS = "Invalid number of tokens. Needs to be: " + EXACT_TOKENS;
     @Autowired
     CashDrawerFormatter cashDrawerFormatter;
-    private Denomination[] denominations = {
-            Denomination.TWENTY,
-            Denomination.TEN,
-            Denomination.FIVE,
-            Denomination.TWO,
-            Denomination.ONE
-    };
 
     public CashDrawer create(String moneyFormat) throws InputFormatException {
         CashDrawer cashDrawer = new CashDrawer(createAccumulators(moneyFormat));
@@ -46,6 +40,15 @@ public class CashDrawerFactory {
             log.error("", ex);
             throw new IllegalStateException(ex);
         }
+    }
+
+    public CashDrawer create(Map<Double, Integer> map){
+        CashDrawer cashDrawer = createEmpty();
+        map.entrySet().forEach(dd -> {
+            cashDrawer.add(Accumulator.create(dd.getKey(), dd.getValue()));
+
+        });
+        return cashDrawer;
     }
 
     public CashDrawer createZero() {
@@ -139,6 +142,7 @@ public class CashDrawerFactory {
 
     private Accumulator createAccumulator(int pos, String s) throws InputFormatException {
         try {
+            Denomination[] denominations = Denomination.getDenominations();
             Accumulator accumulator = new Accumulator(denominations[pos], Integer.parseInt(s));
             return accumulator;
         } catch (NumberFormatException e) {

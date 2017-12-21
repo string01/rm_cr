@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Basic CashRegister implementation.
@@ -51,13 +53,26 @@ public class CashRegister {
 
     public CashDrawer change(int amt) throws InvalidChangeException, InsufficientFundsException {
         Double amtRequested = Double.valueOf(amt);
+
+        if (amt > cashDrawer.getTotal()){
+            throw new InsufficientFundsException();
+        }
         CashDrawer amtCd = cashDrawerFactory.create(new BigDecimal(amtRequested));
-        Calculator.RequestResult requestResult = calculator.makeChangeSearchMode(this.cashDrawer, amtCd);
+
+        Calculator.RequestResult requestResult = calculator.makeChange(this.cashDrawer, amtCd);
 
         CashDrawer resultCashDrawer1 = requestResult.getResult();
         if (!resultCashDrawer1.getTotal().equals(amtRequested)) {
-            // Here's where I would need to kick in an algo for alternative
-            // combinations to make up 11 etc.
+            // Here we kick in an algo for alternative combinations.
+            List<Map<Double, Integer>> posibleCombinations = new Partition(amt).partition();
+            for (Map<Double, Integer> cd : posibleCombinations){
+                CashDrawer cdx = cashDrawerFactory.create(cd);
+                requestResult = calculator.subsetMatch(this.cashDrawer, cashDrawerFactory.create(cd));
+                resultCashDrawer1 = requestResult.getResult();
+                if(resultCashDrawer1.getTotal().equals(amtRequested)) {
+                    break;
+                }
+            }
             throw new InvalidChangeException("Can not make correct change.");
         }
         take(resultCashDrawer1);

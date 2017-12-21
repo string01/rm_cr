@@ -3,6 +3,7 @@ package com.ocr.cash_register;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -94,5 +95,13 @@ public class CashDrawer {
     public void add(Accumulator a) {
         accumulators.add(a);
         calculate();
+    }
+
+    public Accumulator getAccumulatorFor(Denomination denomination) {
+        Optional<Accumulator> oa = getAccumulators().stream().filter(a -> a.getDenomination().equals(denomination)).findFirst();
+        if (oa.isPresent()){
+            return oa.get();
+        }
+        return null;
     }
 }

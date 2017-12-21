@@ -2,6 +2,7 @@ package com.ocr.cash_register;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -39,9 +40,8 @@ public class CashRegisterTest extends AbstractTests {
     public void testTake() {
         assertNotNull(cashRegister);
         try {
-            CashDrawer cashDrawer = cashRegister.getCashDrawer();
             cashRegister.take(createCashDrawer(FORMAT_0));
-            cashDrawer = cashRegister.getCashDrawer();
+            CashDrawer cashDrawer = cashRegister.getCashDrawer();
             assertEquals(EXPECTED_DOUBLE_0, cashDrawer.getTotal());
             cashRegister.put(createCashDrawer(FORMAT_68));
             cashRegister.take(createCashDrawer(FORMAT_68));
@@ -84,7 +84,7 @@ public class CashRegisterTest extends AbstractTests {
     }
 
     @Test
-    public void testChange6848() throws InvalidChangeException {
+    public void testChange6848() throws InsufficientFundsException {
         try {
             assertNotNull(cashRegister);
             cashRegister.clear();
@@ -102,11 +102,11 @@ public class CashRegisterTest extends AbstractTests {
         try {
             // At this point, there is a combination that will make up
             // 11 in change. However, the Calculator algo will not find it.
-            expectedException.expect(InvalidChangeException.class);
             CashDrawer cashDrawer = cashRegister.change(11);
             assertEquals(Double.valueOf(9), cashDrawer.getTotal());
+            expectedException.expect(InsufficientFundsException.class);
             cashDrawer = cashRegister.change(11);
-        } catch (InsufficientFundsException e) {
+        } catch (InvalidChangeException e) {
             log.error("", e);
             fail();
         }

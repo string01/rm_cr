@@ -5,6 +5,10 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Represent a monetary denomination.
@@ -19,6 +23,19 @@ public class Denomination implements Comparable<Denomination> {
     public Denomination(Double multiplier, Denomination nextLowest) {
         this.multiplier = multiplier;
         this.nextLowest = nextLowest;
+    }
+
+    // This is a hack to get something working.
+    public static Denomination create(Double mulitplier) {
+        SortedSet<Denomination> all = new TreeSet<>();
+        all.addAll(Arrays.asList(denominations));
+        Optional<Denomination> od = all.stream().filter(denomination ->
+                (denomination.multiplier.doubleValue() == mulitplier.doubleValue())
+        ).findFirst();
+        if (od.isPresent()){
+            return od.get();
+        }
+        throw new IllegalStateException("Invalid Denomination: " + mulitplier);
     }
 
     @Override
@@ -60,4 +77,16 @@ public class Denomination implements Comparable<Denomination> {
     public static Denomination FIVE = new Denomination(5.0, Denomination.TWO);
     public static Denomination TEN = new Denomination(10.0, Denomination.FIVE);
     public static Denomination TWENTY = new Denomination(20.0, Denomination.TEN);
+
+    private static Denomination[] denominations = {
+            Denomination.TWENTY,
+            Denomination.TEN,
+            Denomination.FIVE,
+            Denomination.TWO,
+            Denomination.ONE
+    };
+
+    public static Denomination[] getDenominations(){
+        return denominations;
+    }
 }
