@@ -1,6 +1,6 @@
 package com.ocr.cash_register;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,6 @@ import java.util.Map;
  * Basic CashRegister implementation.
  */
 @Component
-@Data
 @Slf4j
 public class CashRegister {
 
@@ -27,6 +26,7 @@ public class CashRegister {
     @Autowired
     private Calculator calculator;
 
+    @Getter
     private CashDrawer cashDrawer;
 
     @PostConstruct
@@ -44,11 +44,11 @@ public class CashRegister {
     }
 
     public void take(CashDrawer cashOut) throws InsufficientFundsException {
-        if (cashOut.getTotal() > this.cashDrawer.getTotal()) {
+        if (cashOut.getTotal() > cashDrawer.getTotal()) {
             throw new InsufficientFundsException();
         }
-        CashDrawer resultCashDrawer = this.cashDrawer.subtract(cashOut);
-        this.cashDrawer = resultCashDrawer;
+        CashDrawer resultCashDrawer = cashDrawer.subtract(cashOut);
+        cashDrawer = resultCashDrawer;
     }
 
     public CashDrawer change(int amt) throws InvalidChangeException, InsufficientFundsException {
@@ -57,23 +57,27 @@ public class CashRegister {
         if (amt > cashDrawer.getTotal()){
             throw new InsufficientFundsException();
         }
-        CashDrawer amtCd = cashDrawerFactory.create(new BigDecimal(amtRequested));
+
+        CashDrawer amtCd = cashDrawerFactory.create(amtRequested);
 
         Calculator.RequestResult requestResult = calculator.makeChange(this.cashDrawer, amtCd);
 
         CashDrawer resultCashDrawer1 = requestResult.getResult();
+        boolean found = false;
         if (!resultCashDrawer1.getTotal().equals(amtRequested)) {
             // Here we kick in an algo for alternative combinations.
-            List<Map<Double, Integer>> posibleCombinations = new Partition(amt).partition();
-            for (Map<Double, Integer> cd : posibleCombinations){
-                CashDrawer cdx = cashDrawerFactory.create(cd);
-                requestResult = calculator.subsetMatch(this.cashDrawer, cashDrawerFactory.create(cd));
+            List<Map<Double, Integer>> possibleCombinations = new Partition(amt).partition();
+            for (Map<Double, Integer> cd : possibleCombinations){
+                requestResult = calculator.subsetMatch(cashDrawer, cashDrawerFactory.create(cd));
                 resultCashDrawer1 = requestResult.getResult();
                 if(resultCashDrawer1.getTotal().equals(amtRequested)) {
+                    found = true;
                     break;
                 }
             }
-            throw new InvalidChangeException("Can not make correct change.");
+            if (!found) {
+                throw new InvalidChangeException("Can not make correct change.");
+            }
         }
         take(resultCashDrawer1);
         return cashDrawer;
@@ -81,6 +85,10 @@ public class CashRegister {
 
 
     public void clear() throws InputFormatException {
-        this.cashDrawer = new CashDrawerFactory().createZero();
+        cashDrawer = new CashDrawerFactory().createEmpty();
+    }
+
+    public Double getTotal() {
+        return cashDrawer.getTotal();
     }
 }

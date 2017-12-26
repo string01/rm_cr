@@ -37,6 +37,14 @@ public class Accumulator {
     public static Accumulator create(Double mulitplier, Integer numberOfUnits) {
         return new Accumulator(Denomination.create(mulitplier), numberOfUnits);
     }
+    
+    public static Accumulator createEmpty(Denomination denomination){
+        return new Accumulator(denomination);
+    }
+    
+    public static Accumulator createEmpty(Accumulator a) {
+        return createEmpty(a.denomination);
+    }
 
     public Accumulator add(Accumulator accumulator) {
         int t = accumulator.numberOfUnits;
@@ -57,8 +65,8 @@ public class Accumulator {
         log.debug("ac: {}" + sr.getAccumulator());
         return sr;
     }
-
-
+    
+    /*
     public IncrementResult increment(int numberOfUnits, Denomination denomination) {
         if (numberOfUnits == 0){
             return new IncrementResult(this, 0);
@@ -70,6 +78,21 @@ public class Accumulator {
         Accumulator a = new Accumulator(this.denomination, this.numberOfUnits + d.intValue());
         return new IncrementResult(a, r.intValue());
     }
+    */
+
+    public IncrementResult increment(int numberOfUnits, Denomination denomination) {
+        if (numberOfUnits == 0){
+            return new IncrementResult(this, 0);
+        }
+        BigDecimal inputDenominationMulitplier = BigDecimal.valueOf(denomination.multiplier());
+        BigDecimal denominationMulitplier = BigDecimal.valueOf(this.denomination.multiplier());
+        BigDecimal d = inputDenominationMulitplier
+                .divide(denominationMulitplier)
+                .multiply(BigDecimal.valueOf(numberOfUnits));
+        BigDecimal r = inputDenominationMulitplier.remainder(denominationMulitplier);
+        Accumulator a = new Accumulator(this.denomination, this.numberOfUnits + d.intValue());
+        return new IncrementResult(a, r.intValue());
+    }
 
     public Double unitValue(){
         return 1 * denomination.getMultiplier();
@@ -78,11 +101,14 @@ public class Accumulator {
     @Override
     public String toString() {
         return "Accumulator{" +
-                " numberOfUnits=" + numberOfUnits +
-                ", denomination=" + denomination.getMultiplier() +
-                ", total=" + total +
+                " n: " + numberOfUnits +
+                ", d:"  + denomination.getMultiplier() +
+                ", t: "   + total +
                 '}';
     }
 
-
+    public String toStringTrunc() {
+        return "" + numberOfUnits;
+    }
+    
 }

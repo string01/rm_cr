@@ -2,7 +2,6 @@ package com.ocr.cash_register;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,9 +25,10 @@ public class CashRegisterTest extends AbstractTests {
     public void testPut() {
         assertNotNull(cashRegister);
         try {
-            cashRegister.put(createCashDrawer(FORMAT_0));
-            assertEquals(EXPECTED_DOUBLE_0, cashRegister.getCashDrawer().getTotal());
-            cashRegister.put(createCashDrawer(FORMAT_0));
+            cashRegister.clear();
+            cashRegister.put(createCashDrawer(FORMAT_38));
+            assertEquals(EXPECTED_DOUBLE_38, cashRegister.getCashDrawer().getTotal());
+            cashRegister.put(createCashDrawer(FORMAT_38));
             assertEquals(EXPECTED_DOUBLE_1, cashRegister.getCashDrawer().getTotal());
         } catch (InputFormatException e) {
             log.error("", e);
@@ -37,47 +37,68 @@ public class CashRegisterTest extends AbstractTests {
     }
 
     @Test
-    public void testTake() {
+    public void testTake() throws InsufficientFundsException {
         assertNotNull(cashRegister);
         try {
-            cashRegister.take(createCashDrawer(FORMAT_0));
+            cashRegister.clear();
+            cashRegister.put(createCashDrawer(FORMAT_38));
+            cashRegister.take(createCashDrawer(FORMAT_38));
             CashDrawer cashDrawer = cashRegister.getCashDrawer();
             assertEquals(EXPECTED_DOUBLE_0, cashDrawer.getTotal());
             cashRegister.put(createCashDrawer(FORMAT_68));
             cashRegister.take(createCashDrawer(FORMAT_68));
             cashDrawer = cashRegister.getCashDrawer();
             assertEquals(EXPECTED_DOUBLE_0, cashDrawer.getTotal());
-        } catch (InputFormatException | InsufficientFundsException e) {
+            expectedException.expect(InsufficientFundsException.class);
+            cashRegister.take(createCashDrawer(FORMAT_68));
+        } catch (InputFormatException e) {
             log.error("", e);
             fail();
         }
     }
 
+    /**
+     * @throws InvalidChangeException
+     */
     @Test
-    public void testChange() throws InvalidChangeException {
+    public void testChangeSimple() {
         try {
             assertNotNull(cashRegister);
             cashRegister.clear();
             String out = createOutFormat();
             assertEquals(OUTPUT_0, out);
             cashRegister.put(createCashDrawer(FORMAT_68));
-            out = createOutFormat();
-            assertEquals(OUTPUT_68, out);
+            assertEquals(EXPECTED_DOUBLE_68, cashRegister.getTotal());
             cashRegister.put(createCashDrawer(FORMAT_60));
-            out = createOutFormat();
-            assertEquals(OUTPUT_128, out);
+            assertEquals(EXPECTED_DOUBLE_128, cashRegister.getTotal());
             cashRegister.take(createCashDrawer(FORMAT_85));
-            out = createOutFormat();
-            assertEquals(OUTPUT_43, out);
+            assertEquals(EXPECTED_DOUBLE_43, cashRegister.getTotal());
         } catch (Exception e) {
             log.error("", e);
             fail();
         }
         try {
-            expectedException.expect(InvalidChangeException.class);
             CashDrawer cashDrawer = cashRegister.change(11);
             assertEquals(Double.valueOf(32), cashDrawer.getTotal());
-        } catch (InsufficientFundsException e) {
+        } catch (InsufficientFundsException | InvalidChangeException e) {
+            log.error("", e);
+            fail();
+        }
+    }
+
+    @Test
+    public void testInvalidChange() throws InvalidChangeException {
+        try {
+            assertNotNull(cashRegister);
+            cashRegister.clear();
+            String out = createOutFormat();
+            assertEquals(OUTPUT_0, out);
+            cashRegister.put(createCashDrawer(FORMAT_22));
+            assertEquals(EXPECTED_DOUBLE_22, cashRegister.getTotal());
+            expectedException.expect(InvalidChangeException.class);
+            CashDrawer cashDrawer = cashRegister.change(11);
+            assertEquals(EXPECTED_DOUBLE_11, cashDrawer.getTotal());
+        } catch (InsufficientFundsException | InputFormatException e) {
             log.error("", e);
             fail();
         }
@@ -94,14 +115,12 @@ public class CashRegisterTest extends AbstractTests {
             out = createOutFormat();
             assertEquals(OUTPUT_68, out);
             CashDrawer cashDrawer = cashRegister.change(48);
-            assertEquals(Double.valueOf(20),cashDrawer.getTotal());
+            assertEquals(EXPECTED_DOUBLE_20,cashDrawer.getTotal());
         } catch (Exception e) {
             log.error("", e);
             fail();
         }
         try {
-            // At this point, there is a combination that will make up
-            // 11 in change. However, the Calculator algo will not find it.
             CashDrawer cashDrawer = cashRegister.change(11);
             assertEquals(Double.valueOf(9), cashDrawer.getTotal());
             expectedException.expect(InsufficientFundsException.class);
@@ -110,6 +129,39 @@ public class CashRegisterTest extends AbstractTests {
             log.error("", e);
             fail();
         }
+    }
+
+    /**
+     * This is explicit to the use-case in the requirements.
+     * XXX DL Expand to test edge cases.
+     * @throws InsufficientFundsException
+     */
+    @Test
+    public void testChange11() throws InsufficientFundsException {
+        try {
+            assertNotNull(cashRegister);
+            cashRegister.clear();
+            assertEquals(Double.valueOf(0.0), cashRegister.getTotal());
+            cashRegister.put(createCashDrawer("1 0 3 4 0"));
+            String out = createOutFormat();
+            assertEquals(OUTPUT_43, out);
+            CashDrawer cashDrawer = cashRegister.change(11);
+            assertEquals(EXPECTED_DOUBLE_32,cashDrawer.getTotal());
+            cashDrawer = cashRegister.change(12);
+            assertEquals(Double.valueOf(EXPECTED_DOUBLE_20), cashDrawer.getTotal());
+        } catch (Exception e) {
+            log.error("", e);
+            fail();
+        }
+        /*
+        try {
+            expectedException.expect(InsufficientFundsException.class);
+            cashDrawer = cashRegister.change(11);
+        } catch (InvalidChangeException e) {
+            log.error("", e);
+            fail();
+        }
+        */
 
     }
 

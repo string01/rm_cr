@@ -21,7 +21,7 @@ public class CashDrawerFormatter {
     public String toOutput(CashDrawer cashDrawer){
         StringBuilder sb = new StringBuilder("$");
         sb.append(cashDrawer.getTotal().longValue()).append(" ");
-        for(Accumulator a: cashDrawer.getAccumulators()){
+        for(Accumulator a: cashDrawer.getAccumulators().values()){
             sb.append(a.getNumberOfUnits()).append(" ");
         }
         log.debug("Output: {}", sb.toString());

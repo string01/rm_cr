@@ -31,8 +31,8 @@ public class Calculator {
         CashDrawer reqCd = cashDrawerFactory.createEmpty();
         CashDrawer remainCd = cashDrawerFactory.createEmpty();
 
-        for (Accumulator a : registerDrawer.getAccumulators()) {
-            Optional<Accumulator> o = requestedDrawer.getAccumulators().stream().filter(x -> a.getDenomination().equals(x.getDenomination())).findFirst();
+        for (Accumulator a : registerDrawer.getAccumulators().values()) {
+            Optional<Accumulator> o = requestedDrawer.getAccumulators().values().stream().filter(x -> a.getDenomination().equals(x.getDenomination())).findFirst();
             if (!o.isPresent()){
                 throw new IllegalStateException();
             }
@@ -64,7 +64,7 @@ public class Calculator {
 
     private boolean searchInner(CashDrawer registerDrawer, Double amt, Denomination startingDenomination, CashDrawer reqCd, CashDrawer remainCd) {
         double resAmt = amt;
-        Optional<Accumulator> oa = registerDrawer.getAccumulators().stream().filter(d -> d.getDenomination().
+        Optional<Accumulator> oa = registerDrawer.getAccumulators().values().stream().filter(d -> d.getDenomination().
                 equals(startingDenomination)).findFirst();
 
         if (!oa.isPresent()){
@@ -90,18 +90,20 @@ public class Calculator {
     }
 
     public RequestResult subsetMatch(CashDrawer cashDrawer, CashDrawer req){
-        CashDrawer res = cashDrawerFactory.createEmpty();
-        CashDrawer rem = cashDrawerFactory.createEmpty();
-        for (Accumulator a: req.getAccumulators()){
+        CashDrawer change = cashDrawerFactory.createEmpty();
+        CashDrawer remaining = cashDrawerFactory.createEmpty();
+        for (Accumulator a: req.getAccumulators().values()){
             Accumulator ax = cashDrawer.getAccumulatorFor(a.getDenomination());
-
-            if (a.getNumberOfUnits() >= ax.getNumberOfUnits()){
+            if (ax.getNumberOfUnits() >= a.getNumberOfUnits()){
                 SubtractionResult sr = ax.subtract(a);
-                res.add(sr.getAmtTaken());
-                rem.add(sr.getAccumulator());
+                change.add(sr.getAmtTaken());
+                remaining.add(sr.getAccumulator());
+            } else {
+                change.add(Accumulator.createEmpty(a));
+                remaining.add(Accumulator.createEmpty(a));
             }
         }
-        return new RequestResult(res, rem);
+        return new RequestResult(change, remaining);
     }
 
     @Data

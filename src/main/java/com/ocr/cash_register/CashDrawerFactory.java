@@ -7,9 +7,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Create CashDrawer instances given either the money format
@@ -19,39 +18,40 @@ import java.util.TreeSet;
 @Component
 @Slf4j
 public class CashDrawerFactory {
-
+    
     public final static String MUST_BE_A_NUMBER = " must be a number.";
     private final static String FORMAT_ZERO = "0 0 0 0 0";
     private final static int EXACT_TOKENS = 5;
     public final static String INVALID_NUMBER_OF_TOKENS = "Invalid number of tokens. Needs to be: " + EXACT_TOKENS;
     @Autowired
     CashDrawerFormatter cashDrawerFormatter;
-
+    
     public CashDrawer create(String moneyFormat) throws InputFormatException {
         CashDrawer cashDrawer = new CashDrawer(createAccumulators(moneyFormat));
         return cashDrawer;
     }
-
-    public CashDrawer create(BigDecimal amt) {
+    
+    public CashDrawer create(Double amt) {
         try {
-            CashDrawer cashDrawer = create(createFormatFor(amt));
+            //CashDrawer cashDrawer = create(createFormatFor(amt));
+            CashDrawer cashDrawer = createFor(amt);
             return cashDrawer;
         } catch (Exception ex) {
             log.error("", ex);
             throw new IllegalStateException(ex);
         }
     }
-
-    public CashDrawer create(Map<Double, Integer> map){
+    
+    public CashDrawer create(Map<Double, Integer> map) {
         CashDrawer cashDrawer = createEmpty();
         map.entrySet().forEach(dd -> {
             cashDrawer.add(Accumulator.create(dd.getKey(), dd.getValue()));
-
+            
         });
         return cashDrawer;
     }
-
-    public CashDrawer createZero() {
+    
+    public CashDrawer createEmpty() {
         try {
             return create(FORMAT_ZERO);
         } catch (InputFormatException e) {
@@ -59,23 +59,18 @@ public class CashDrawerFactory {
             throw new IllegalStateException(e);
         }
     }
-
-    public CashDrawer createEmpty() {
-        CashDrawer cashDrawer = new CashDrawer(createAccumulators());
-        return cashDrawer;
-    }
-
-    /**
+    
+    /*
      * This creates a format string from a BigDecimal.
      * XXX DL really should refactor this to use Double to avoid the ugliness that
      * is BigDecimal.
+     *
      * @param amtx
      * @return
      */
+    /*
     private String createFormatFor(BigDecimal amtx) {
         BigDecimal amt20 = amtx.divide((Denomination.TWENTY.multiplier()).setScale(0, RoundingMode.DOWN));
-        BigDecimal amt20x = amtx.divide(Denomination.TWENTY.multiplier());
-        BigDecimal amt30y = amt20x.setScale(0, RoundingMode.DOWN);
         if (amt20.intValue() >= 1) {
             amt20 = amt20.setScale(0, RoundingMode.DOWN);
             amtx = amtx.subtract(Denomination.TWENTY.multiply(amt20));
@@ -116,30 +111,60 @@ public class CashDrawerFactory {
                 amt2.toString(),
                 amt1.toString());
     }
-
-
-    private SortedSet<Accumulator> createAccumulators(String moneyFormat) throws InputFormatException {
-
+    */
+    
+    public final static void main(String[] args) {
+        Double d = 11.0 / Denomination.TWENTY.multiplier().doubleValue();
+        d.doubleValue();
+    }
+    
+    private CashDrawer createFor(Double amtx) {
+        CashDrawer cashDrawer = createEmpty();
+        
+        amtx = getaDouble(cashDrawer, amtx, Denomination.TWENTY);
+        amtx = getaDouble(cashDrawer, amtx, Denomination.TEN);
+        amtx = getaDouble(cashDrawer, amtx, Denomination.FIVE);
+        amtx = getaDouble(cashDrawer, amtx, Denomination.TWO);
+        amtx = getaDouble(cashDrawer, amtx, Denomination.ONE);
+        
+        return cashDrawer;
+        
+    }
+    
+    private Double getaDouble(CashDrawer cashDrawer, Double amt, Denomination denomination) {
+        Double amtx = amt;
+        amt = Math.floor(amt / denomination.multiplier());
+        if (amt.intValue() >= 1) {
+            cashDrawer.add(Accumulator.create(denomination.multiplier(), amt.intValue()));
+            amtx = amtx - (denomination.multiply(amt));
+        }
+        return amtx;
+    }
+    
+    private ConcurrentSkipListMap<Denomination, Accumulator> createAccumulators(String moneyFormat) throws InputFormatException {
+        
         StringTokenizer stringTokenizer = new StringTokenizer(moneyFormat, " ");
         if (stringTokenizer.countTokens() != EXACT_TOKENS) {
             throw new InputFormatException(INVALID_NUMBER_OF_TOKENS);
         }
-        SortedSet<Accumulator> accumulators = createAccumulators();
-
+        ConcurrentSkipListMap<Denomination, Accumulator> accumulators = createAccumulators();
+        
         int pos = 0;
         while (stringTokenizer.hasMoreTokens()) {
-            accumulators.add(createAccumulator(pos, stringTokenizer.nextToken()));
+            Accumulator accumulator = createAccumulator(pos, stringTokenizer.nextToken());
+            accumulators.put(accumulator.getDenomination(), accumulator);
+            
             ++pos;
         }
         return accumulators;
     }
-
-    private SortedSet<Accumulator> createAccumulators() {
-        SortedSet<Accumulator> accumulators = new TreeSet<Accumulator>(new DescendingDenominationComparator());
+    
+    private ConcurrentSkipListMap<Denomination, Accumulator> createAccumulators() {
+        ConcurrentSkipListMap<Denomination, Accumulator> accumulators = new ConcurrentSkipListMap<>(new DescendingDenominationComparator());
         return accumulators;
-
+        
     }
-
+    
     private Accumulator createAccumulator(int pos, String s) throws InputFormatException {
         try {
             Denomination[] denominations = Denomination.getDenominations();

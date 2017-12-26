@@ -24,15 +24,15 @@ public class CashDrawerFactoryTest {
 
     @Test
     public void testFactory0(){
-        CashDrawer moneyBag = null;
+        CashDrawer cashDrawer = null;
         try {
-            moneyBag = createMoneyBag(FORMAT_0);
+            cashDrawer = createCashDrawer(FORMAT_0);
         } catch (InputFormatException e) {
             log.error("Test fail: ", e);
             fail();
         }
-        assertNotNull(moneyBag);
-        assertEquals(EXPECTED_0, moneyBag.getTotal());
+        assertNotNull(cashDrawer);
+        assertEquals(EXPECTED_0, cashDrawer.getTotal());
     }
 
     @Test
@@ -49,13 +49,13 @@ public class CashDrawerFactoryTest {
 
     private void innerBadFormatTest(String badFormattedInput) throws InputFormatException {
         expectedException.expect(InputFormatException.class);
-        CashDrawer moneyBag = createMoneyBag(badFormattedInput);
+        CashDrawer cashDrawer = createCashDrawer(badFormattedInput);
         fail("Did not throw expected exception.");
 
     }
 
-    private CashDrawer createMoneyBag(String format) throws InputFormatException {
-        CashDrawer moneyBag = new CashDrawerFactory().create(format);
-        return moneyBag;
+    private CashDrawer createCashDrawer(String format) throws InputFormatException {
+        CashDrawer cashDrawer = new CashDrawerFactory().create(format);
+        return cashDrawer;
     }
 }

@@ -63,12 +63,20 @@ public class Denomination implements Comparable<Denomination> {
         return multiplier.compareTo(o.multiplier);
     }
 
-    public BigDecimal multiplier() {
-        return BigDecimal.valueOf(multiplier);
+    //public BigDecimal multiplier() {
+        //return BigDecimal.valueOf(multiplier);
+    //}
+    
+    public Double multiplier() {
+        return multiplier;
     }
 
-    public BigDecimal multiply(BigDecimal amt) {
-        return multiplier().multiply(amt);
+    //public BigDecimal multiply(BigDecimal amt) {
+        //return multiplier().multiply(amt);
+    //}
+    
+    public Double multiply(Double amt) {
+        return multiplier() * amt;
     }
 
     public static Denomination ZERO = new Denomination(0.0, Denomination.ZERO);
