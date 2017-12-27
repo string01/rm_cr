@@ -6,13 +6,13 @@ This implementation is based on an OOA/D of the components used to create a cash
 While admittedly this implementation is overkill for the given problem, I had an idea of how to model the parts to make
 a cash register. The core domain model classes are CashRegister, CashDrawer, Accumulator and Denomination.
 
-The CashRegister has-a CashDrawer which, in turn has-a collection of Accumulator instances. There is one Accumulator for
+The CashRegister has-a CashDrawer which, in turn, has-a collection of Accumulator instances. There is one Accumulator for
 each Denomination that is defined. In this case, $20, 10, 5, 2, and 1. The design should be easily extensible to
 allow for fractional denominations $0.50, 0.25, etc. without too much trouble. I only implemented the denominations
 given in the problem description at this time.
 
 System Behavior.
-When a transaction (put, take, change) is run on the CashRegister, a virtual CashDrawer instance is created either from
+When a transaction (put, take, change) is run on the CashRegister, a virtual CashDrawer instance is created from
 the given String input format with the number of each denomination (e.g. 1 2 3 4 5 is 1 $20, 2 $10's 3 $5's, 4 $2's and
 5 $1's for a total of 68. This virtual CashDrawer is then added to or subtracted from the CashRegister's CashDrawer
 (with exceptions for bad input format or insufficient funds).
@@ -33,4 +33,5 @@ Building:
 $> mvn clean install
 Can be used to build and run tests.
 
-This is not a spring-boot application. In this is used by the cash-register-shell project as a dependency.
+This is not a spring-boot application. This is used by the cash-register-shell project as a dependency.
+To use the shell, download, build and run the rm_cr_shell project.
