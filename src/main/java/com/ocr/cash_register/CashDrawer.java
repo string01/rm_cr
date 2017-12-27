@@ -53,7 +53,6 @@ public class CashDrawer {
     }
     
     public CashDrawer subtract(CashDrawer cashDrawer) {
-        // ConcurrentSkipListMap<Denomination, Accumulator> newAccumulators = new ConcurrentSkipListMap<>(accumulators.comparator());
         Accumulator[] inputAccumulators = cashDrawer.getAccumulators().values().toArray(new Accumulator[]{});
         CashDrawer resultCashDrawer = new CashDrawerFactory().createEmpty();
         int idx = 0;

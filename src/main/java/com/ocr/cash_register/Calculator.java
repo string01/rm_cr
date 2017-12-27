@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+/**
+ * Class to encapsulate the core calculation methods for the CashRegister.
+ */
 @Component
 @Slf4j
 public class Calculator {
@@ -14,37 +17,6 @@ public class Calculator {
     @Autowired
     protected CashDrawerFactory cashDrawerFactory;
 
-    @Deprecated
-    public RequestResult makeChangeOld(CashDrawer registerDrawer, CashDrawer requestedDrawer) {
-
-        // check if amt in register is > amt in req.
-
-        // start at top of stack
-        // ask for number of that denom
-        // registerDrawer can recurse down it's stack to make that amt
-        // return a new register with those slots filled. and a drawer with remainder.
-        // subtract that amt from requested drawer
-        // find next non-zero Accumulator in reqestDrawer
-        // ask for amt of that denom
-        // return drawer with those slots filled.
-        // Recurse down the stack of denominations.
-        CashDrawer reqCd = cashDrawerFactory.createEmpty();
-        CashDrawer remainCd = cashDrawerFactory.createEmpty();
-
-        for (Accumulator a : registerDrawer.getAccumulators().values()) {
-            Optional<Accumulator> o = requestedDrawer.getAccumulators().values().stream().filter(x -> a.getDenomination().equals(x.getDenomination())).findFirst();
-            if (!o.isPresent()){
-                throw new IllegalStateException();
-            }
-
-            SubtractionResult requestResult = a.subtract(o.get());
-            Accumulator remaining = requestResult.getAccumulator();
-            Accumulator amtTaken = requestResult.getAmtTaken();
-            reqCd.add(amtTaken);
-            remainCd.add(remaining);
-        }
-        return new RequestResult(reqCd, remainCd);
-    }
 
     public RequestResult makeChange(CashDrawer registerDrawer, CashDrawer requestedDrawer) {
         Double amt = requestedDrawer.getTotal();
@@ -76,8 +48,8 @@ public class Calculator {
             return true;
         }
         // get diff from amt next multiple of a units
-        double d = amt.doubleValue() / a.unitValue();
-        SubtractionResult sr = a.subtract(new Accumulator(a.getDenomination(), Integer.valueOf((int) d)));
+        double d = amt / a.unitValue();
+        SubtractionResult sr = a.subtract(new Accumulator(a.getDenomination(), (int) d));
         Accumulator amtTaken = sr.getAmtTaken();
         Accumulator remaining = sr.getAccumulator();
         reqCd.add(amtTaken);

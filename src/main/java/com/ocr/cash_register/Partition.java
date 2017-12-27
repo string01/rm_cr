@@ -8,16 +8,17 @@ import java.util.*;
 /**
  * A class to calculate the possible combinations of
  * a given set of Denominations to make up a a target amount.
- * Based on the Partition algo
+ * Based on the Partition algo.
  */
 @Slf4j
 public class Partition {
 
-    final int target;
+    private final int target;
 
-    List<Map<Double, Integer>> results = new ArrayList<>();
-    ValidatingMap<Double, Integer> current;
-    boolean currentValid;
+    private List<Map<Double, Integer>> results = new ArrayList<>();
+    private ValidatingMap<Double, Integer> current;
+    private boolean currentValid;
+    private int depth = 0;
 
 
     public Partition(int target) {
@@ -27,11 +28,11 @@ public class Partition {
 
     /**
      * XXX DL FIXME. Should be using Denomination class to populate this.
-     * @param base
-     * @return
+     * @param base The 'base' unit on which we are working for this iteration.
+     * @return A Map of Denomination multiplier by number of units.
      */
-    public Map<Double, Integer> intialize(Double base) {
-        current = new ValidatingMap<>(Double.valueOf(target));
+    private Map<Double, Integer> intialize(Double base) {
+        current = new ValidatingMap<>((double) target);
         Arrays.asList(new Double[]{1.0, 2.0, 5.0, 10.0, 20.0}).forEach(d -> {
             current.put(d, Integer.valueOf(0));
         });
@@ -47,18 +48,17 @@ public class Partition {
         return results;
     }
 
-    int depth = 0;
     public void partition(int n, int max, String prefix, Double base) {
         ++depth;
-        log.debug("n: {} max: {} prefix: {} base: {}", n, max, prefix, base);
-        Integer d = current.get(Double.valueOf(max));
+        // log.debug("n: {} max: {} prefix: {} base: {}", n, max, prefix, base);
+        Integer d = current.get((double) max);
         if (d != null) {
-            current.replace(Double.valueOf(max), ++d);
+            current.replace((double) max, ++d);
         } else {
             currentValid = false;
         }
         if (n == 0) {
-            log.debug(prefix);
+            // log.debug(prefix);
             if (currentValid) {
                 if (current.isValidTotal()) {
                     results.add(current);
@@ -70,23 +70,13 @@ public class Partition {
 
         for (int i = Math.min(max, n); i >= 1; i--) {
             if (depth == 1){
-                log.debug("Depth: {}", depth);
-                base = Double.valueOf(i);
+                // log.debug("Depth: {}", depth);
+                base = (double) i;
                 currentValid = true;
             }
             partition(n - i, i, prefix + " " + i, base);
             --depth;
         }
-
-        return;
-    }
-
-    // XXX DL FIXME Delete.
-    public static void main(String[] args) {
-        int N = Integer.parseInt(args[0]);
-        Partition p = new Partition(N);
-        List<Map<Double, Integer>> output = p.partition();
-        p.list();
     }
 
     private void list() {

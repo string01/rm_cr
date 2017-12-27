@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationContext;
 /**
  * This started out as a spring-boot app using spring-shell v1
  * However, that shell wouldn't allow for the input format
- * needed.
+ * needed. So, I made this a plain-old jar file.
  * The project cash-register-shell uses cash-register as a dependency.
  */
 @Deprecated

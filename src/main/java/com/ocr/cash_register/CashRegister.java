@@ -28,6 +28,9 @@ public class CashRegister {
 
     @Getter
     private CashDrawer cashDrawer;
+    
+    @Getter
+    private CashDrawer lastTaken;
 
     @PostConstruct
     public void init() {
@@ -44,9 +47,11 @@ public class CashRegister {
     }
 
     public void take(CashDrawer cashOut) throws InsufficientFundsException {
+        lastTaken = cashDrawerFactory.createEmpty();
         if (cashOut.getTotal() > cashDrawer.getTotal()) {
             throw new InsufficientFundsException();
         }
+        lastTaken = cashOut;
         CashDrawer resultCashDrawer = cashDrawer.subtract(cashOut);
         cashDrawer = resultCashDrawer;
     }

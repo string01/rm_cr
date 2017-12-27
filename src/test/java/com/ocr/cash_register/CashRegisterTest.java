@@ -73,14 +73,9 @@ public class CashRegisterTest extends AbstractTests {
             assertEquals(EXPECTED_DOUBLE_128, cashRegister.getTotal());
             cashRegister.take(createCashDrawer(FORMAT_85));
             assertEquals(EXPECTED_DOUBLE_43, cashRegister.getTotal());
-        } catch (Exception e) {
-            log.error("", e);
-            fail();
-        }
-        try {
             CashDrawer cashDrawer = cashRegister.change(11);
-            assertEquals(Double.valueOf(32), cashDrawer.getTotal());
-        } catch (InsufficientFundsException | InvalidChangeException e) {
+            assertEquals(EXPECTED_DOUBLE_32, cashDrawer.getTotal());
+        } catch (Exception e) {
             log.error("", e);
             fail();
         }
@@ -122,7 +117,7 @@ public class CashRegisterTest extends AbstractTests {
         }
         try {
             CashDrawer cashDrawer = cashRegister.change(11);
-            assertEquals(Double.valueOf(9), cashDrawer.getTotal());
+            assertEquals(EXPECTED_DOUBLE_9, cashDrawer.getTotal());
             expectedException.expect(InsufficientFundsException.class);
             cashDrawer = cashRegister.change(11);
         } catch (InvalidChangeException e) {

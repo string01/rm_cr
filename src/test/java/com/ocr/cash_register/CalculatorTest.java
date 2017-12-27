@@ -26,7 +26,7 @@ public class CalculatorTest extends AbstractTests {
         try {
             CashDrawer orig = cashDrawerFactory.create(FORMAT_68_1);
             CashDrawer req = cashDrawerFactory.create(FORMAT_48);
-            Calculator.RequestResult requestResult = calculator.makeChangeOld(orig, req);
+            Calculator.RequestResult requestResult = calculator.makeChange(orig, req);
             assertEquals(DOUBLE_48, requestResult.getResult().getTotal());
             assertEquals(DOUBLE_20, requestResult.getRemaining().getTotal());
 

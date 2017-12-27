@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 
 /**
- * An immutable accumulator of units of a given denomination.
+ * An immutable accumulator of units for a given denomination.
  */
 @Data
 @Slf4j
@@ -62,34 +62,19 @@ public class Accumulator {
             result = numberOfUnits - amtTaken;
         }
         SubtractionResult sr = new SubtractionResult(new Accumulator(denomination, result), remainder, new Accumulator(denomination, amtTaken));
-        log.debug("ac: {}" + sr.getAccumulator());
         return sr;
     }
     
-    /*
     public IncrementResult increment(int numberOfUnits, Denomination denomination) {
         if (numberOfUnits == 0){
             return new IncrementResult(this, 0);
         }
-        BigDecimal d = denomination.multiplier()
-                .divide(this.denomination.multiplier())
+        BigDecimal inputDenominationMultiplier = BigDecimal.valueOf(denomination.multiplier());
+        BigDecimal denominationMultiplier = BigDecimal.valueOf(this.denomination.multiplier());
+        BigDecimal d = inputDenominationMultiplier
+                .divide(denominationMultiplier)
                 .multiply(BigDecimal.valueOf(numberOfUnits));
-        BigDecimal r = denomination.multiplier().remainder(this.denomination.multiplier());
-        Accumulator a = new Accumulator(this.denomination, this.numberOfUnits + d.intValue());
-        return new IncrementResult(a, r.intValue());
-    }
-    */
-
-    public IncrementResult increment(int numberOfUnits, Denomination denomination) {
-        if (numberOfUnits == 0){
-            return new IncrementResult(this, 0);
-        }
-        BigDecimal inputDenominationMulitplier = BigDecimal.valueOf(denomination.multiplier());
-        BigDecimal denominationMulitplier = BigDecimal.valueOf(this.denomination.multiplier());
-        BigDecimal d = inputDenominationMulitplier
-                .divide(denominationMulitplier)
-                .multiply(BigDecimal.valueOf(numberOfUnits));
-        BigDecimal r = inputDenominationMulitplier.remainder(denominationMulitplier);
+        BigDecimal r = inputDenominationMultiplier.remainder(denominationMultiplier);
         Accumulator a = new Accumulator(this.denomination, this.numberOfUnits + d.intValue());
         return new IncrementResult(a, r.intValue());
     }

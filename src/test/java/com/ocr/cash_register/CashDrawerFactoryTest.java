@@ -51,7 +51,6 @@ public class CashDrawerFactoryTest {
         expectedException.expect(InputFormatException.class);
         CashDrawer cashDrawer = createCashDrawer(badFormattedInput);
         fail("Did not throw expected exception.");
-
     }
 
     private CashDrawer createCashDrawer(String format) throws InputFormatException {

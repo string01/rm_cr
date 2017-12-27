@@ -25,17 +25,16 @@ public class Denomination implements Comparable<Denomination> {
         this.nextLowest = nextLowest;
     }
 
-    // This is a hack to get something working.
-    public static Denomination create(Double mulitplier) {
+    public static Denomination create(Double multiplier) {
         SortedSet<Denomination> all = new TreeSet<>();
         all.addAll(Arrays.asList(denominations));
         Optional<Denomination> od = all.stream().filter(denomination ->
-                (denomination.multiplier.doubleValue() == mulitplier.doubleValue())
+                (denomination.multiplier.equals(multiplier))
         ).findFirst();
         if (od.isPresent()){
             return od.get();
         }
-        throw new IllegalStateException("Invalid Denomination: " + mulitplier);
+        throw new IllegalStateException("Invalid Denomination: " + multiplier);
     }
 
     @Override
@@ -63,17 +62,9 @@ public class Denomination implements Comparable<Denomination> {
         return multiplier.compareTo(o.multiplier);
     }
 
-    //public BigDecimal multiplier() {
-        //return BigDecimal.valueOf(multiplier);
-    //}
-    
     public Double multiplier() {
         return multiplier;
     }
-
-    //public BigDecimal multiply(BigDecimal amt) {
-        //return multiplier().multiply(amt);
-    //}
     
     public Double multiply(Double amt) {
         return multiplier() * amt;
@@ -86,6 +77,7 @@ public class Denomination implements Comparable<Denomination> {
     public static Denomination TEN = new Denomination(10.0, Denomination.FIVE);
     public static Denomination TWENTY = new Denomination(20.0, Denomination.TEN);
 
+    // XXX This is fragile; as the order of denominations is important.
     private static Denomination[] denominations = {
             Denomination.TWENTY,
             Denomination.TEN,

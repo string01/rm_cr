@@ -11,6 +11,5 @@ public class DescendingDenominationComparator<T extends Denomination> implements
     @Override
     public int compare(T o1, T o2) {
         return o2.compareTo(o1);
-        //return o2.getDenomination().compareTo(o1.getDenomination());
     }
 }
